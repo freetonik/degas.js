@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+
+<channel>
+<title>DNA feed</title>
+<description>This is DNA feed for distributed LCS</description>
+<link>http://freetonik.com</link>
+<lastBuildDate>Mon, 28 Aug 2011 11:12:55 -0400 </lastBuildDate>
+<pubDate>Tue, 29 Aug 2011 09:00:00 -0400</pubDate>
+
+<item>
+	<title>DNA piece number one</title>
+	<id>0001</id>
+	<description>CCAGTTTTATCACGGCGTCTTTGCTCACACCCGTCCCGGAGGAGTCCGGCATCGGACACGGTGGCAAGGGCGAACCCGGGTTGATACTAACTGTGCCCAAAAGAGTAGCCAGGTGTCGCAGAAGTAGGTACGTTCACTCCCCCTGGTGAATAACCCGCATGTACTGGGGATTTTTGATCATTATGTCTACACGGGGAACA</description>
+	<link>http://nonono.com</link>
+	<guid isPermaLink="false"> 1102345</guid>
+	<pubDate>Tue, 29 Aug 2006 09:00:00 -0400</pubDate>
+</item>
+
+<item>
+	<title>DNA piece number two</title>
+	<id>0002</id>
+	<description>GGGCCATCTGATTTTTGATACGCGGCTATACGAGCCGATGGAGTCCATGTCGAACGCAAGCGATAGCACACAGCTTGGAGGTGAAATAATACGGGAGGCCGGGGCGGGGGCTTTGAGTGCCCTCTGGTTAGGGTCGGTAACTAGGGTTTGAGCGATCACTCGAAGTCAGTTCAGCAACAGATGCAGTAACCAAATCTATC</description>
+	<link>http://nonono.com</link>
+	<guid isPermaLink="false"> 1102345</guid>
+	<pubDate>Tue, 29 Aug 2006 09:00:00 -0400</pubDate>
+</item>
+
+<item>
+	<title>Current top sequence</title>
+	<id>0003</id>
+	<description>14.5</description>
+	<link>http://nonono.com</link>
+	<guid isPermaLink="false"> 1102345</guid>
+	<pubDate>Tue, 29 Aug 2006 09:00:00 -0400</pubDate>
+</item>
+
+</channel>
+</rss>

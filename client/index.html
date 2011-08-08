@@ -1,0 +1,88 @@
+<html>
+<head>
+<title>Evolution</title>
+<script src="jquery.min.js"></script>
+<script type="text/javascript" src="build/dist/jquery.jfeed.pack.js"></script>
+<script src="evolution.js"></script>
+<script>
+    //web socket interface
+    var client = {
+        connect: function(){
+         this._ws=new WebSocket("ws://127.0.0.1:3434");
+         this._ws.onopen=this._onopen;
+         this._ws.onmessage=this._onmessage;
+         this._ws.onclose=this._onclose;
+         console.log("Socket created " + this._ws);
+        },
+        
+        _onopen: function(){
+          client._send('client-connected');
+          console.log("Socket opened");
+       },
+       
+        _send: function(message){
+          console.log("Sending msg to ws " + message);
+           if (this._ws)
+            this._ws.send(message);
+        },
+        
+        chat: function(text) {
+          if (text != null && text.length>0 )
+            client._send(text);
+        },
+        
+        _onmessage: function(m) {
+          if (m.data){
+            var text = m.data; 
+            console.log(text);
+          }
+        },
+        
+        _onclose: function(m) {
+          this._ws=null;
+        }
+    };
+    
+    //start ws connection
+    client.connect(); //TODO: try/catch
+
+	//create new worker
+	var worker = new Worker("evolve.js");
+    
+	//make him update local text
+	worker.addEventListener('message', function(e) {
+        if (e.data.indexOf("log:") == 0) {
+            console.log(e.data.replace(/log:/i, ""));
+            return;
+        }
+        
+        if (e.data.indexOf("err:") == 0) {
+            console.log("ERROR: " + e.data.replace(/err:/i, ""));
+        }
+        
+        if (e.data.indexOf("gau:") == 0) {
+            document.getElementById('latest_result').textContent = e.data.replace(/gau:/i, "");
+        }
+        
+        if (e.data.indexOf("ws:") == 0) {
+            client.chat(e.data.replace(/ws:/i, ""))
+        }
+        
+	  }, false);
+	
+	//get sequences, serialize and pass as a string to the worker, start the worker
+	jQuery.getFeed({
+	   		url: "rss.xml",
+	   		success: function(feed) {
+	     		worker.postMessage("init:" + feed.items[0].description + feed.items[1].description);
+	   		}		
+		});
+
+</script>
+
+</head>
+<body>
+<h1>Evolution</h1>
+<p id="latest_result">none</p>
+</body>
+</html> 
