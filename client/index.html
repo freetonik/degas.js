@@ -1,8 +1,8 @@
 <html>
 <head>
 <title>Evolution</title>
-<script src="jquery.min.js"></script>
-<script type="text/javascript" src="build/dist/jquery.jfeed.pack.js"></script>
+<script src="inc/jquery.min.js"></script>
+<script type="text/javascript" src="inc/build/dist/jquery.jfeed.pack.js"></script>
 <script src="evolution.js"></script>
 <script>
     //web socket interface
@@ -16,7 +16,7 @@
         },
         
         _onopen: function(){
-          client._send('client-connected');
+          client._send('client-connected:');
           console.log("Socket opened");
        },
        

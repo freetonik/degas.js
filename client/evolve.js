@@ -22,7 +22,7 @@ self.addEventListener('message', function(e) {
             {
                 population.buildNextGeneration();
                 gau("Generation " + i + ": " + population.people[0].fitness);
-                if (i%10 === 0) ws(population.people[0].sequence);
+                if (i%10 === 0) ws("gau-candidate:" + population.people[0].sequence);
             }
         }
         catch (e)
@@ -32,17 +32,7 @@ self.addEventListener('message', function(e) {
         }
     }
     
-    //initial top fitness from server (RSS)
-    if (e.data.indexOf("topf:") == 0 ) {
-        topFitness = e.data.replace(/topf:/i, "");
-        log("Top fitness of " + topFitness + " received");
-    }
-    
-
-    
-    
-	
-	// clean up
+    // clean up
 	delete population;
 	
 }, false);

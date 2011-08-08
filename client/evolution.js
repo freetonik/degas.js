@@ -6,7 +6,7 @@ var topFitness = 0;
 
 //global constants
 var SEQUENCE_LENGTH = 200;
-var CANDIDATE_LENGTH = 200;
+var CANDIDATE_LENGTH = 160;
 var SINGLE_MATCH_AWARD = 0.5;
 var DOUBLE_MATCH_AWARD = 2;
 var MUTATION_RATE = 0.6;
@@ -160,5 +160,3 @@ function Population()
         }
     }; 
 } //POPULATION
-
-
