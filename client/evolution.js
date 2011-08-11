@@ -12,7 +12,7 @@ var DOUBLE_MATCH_AWARD = 2;
 var MUTATION_RATE = 0.6;
 var XOVER_RATE = 0.5;
 var GENERATIONS = 55;
-var POPULATION_SIZE = 10;
+var POPULATION_SIZE = 3;
 
 function Chromosome()
 {

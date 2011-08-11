@@ -22,8 +22,9 @@
        
         _send: function(message){
           console.log("Sending msg to ws " + message);
-           if (this._ws)
-            this._ws.send(message);
+           if (this._ws) {
+                this._ws.send(message);
+            }
         },
         
         chat: function(text) {
@@ -33,8 +34,24 @@
         
         _onmessage: function(m) {
           if (m.data){
-            var text = m.data; 
-            console.log(text);
+            console.log("Received message from server:" + m.data);
+            
+            // client ID received
+            if (m.data.indexOf("cid:") == 0) {
+                var myID = parseInt(m.data.replace(/cid:/i, ""));
+                //maybe all spots are really taken
+                if (myID === -1) Alert("Sorry, all spots are taken!");
+                else
+                {
+                    //get sequences, serialize and pass as a string to the worker, start the worker
+                    jQuery.getFeed({
+                        url: "rss.xml",
+                        success: function(feed) {
+                            worker.postMessage("init:" + feed.items[myID].description);
+                        }		
+                    });
+                }
+            }
           }
         },
         
@@ -70,14 +87,6 @@
         
 	  }, false);
 	
-	//get sequences, serialize and pass as a string to the worker, start the worker
-	jQuery.getFeed({
-	   		url: "rss.xml",
-	   		success: function(feed) {
-	     		worker.postMessage("init:" + feed.items[0].description + feed.items[1].description);
-	   		}		
-		});
-
 </script>
 
 </head>
