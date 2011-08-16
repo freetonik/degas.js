@@ -6,66 +6,7 @@
 <script src="evolution.js"></script>
 <script src="degas/degas.js"></script>
 <script>
-//just testing the framework
 
-var wscl = degas.Class({
-    initialize: function(host, port) {
-        this.host = host;
-        this.port = port;
-    },
-    
-    connect: function() {
-        this._ws = new WebSocket(this.host + ":" + this.port);
-        //this._ws.onopen=this.onopen;
-        this._ws.onmessage=this.onmessage;
-        this._ws.onclose=this.onclose;
-        console.log("Socket created for: " + this.host + ":" + this.port);
-        this._ws.send('client-connected:');
-    },
-    
-    open: function(){
-        
-        console.log("Hey! " + this.host);
-    },
-    
-    send: function(message){
-        console.log("Sending msg to ws " + message);
-        if (this._ws) {
-            this._ws.send(message);
-        }
-    },
-    
-    onmessage: function(m) {
-      if (m.data){
-        console.log("Received message from server:" + m.data);
-        
-        // client ID received
-        if (m.data.indexOf("cid:") == 0) {
-            var myID = parseInt(m.data.replace(/cid:/i, ""));
-            //maybe all spots are really taken
-            if (myID === -1) Alert("Sorry, all spots are taken!");
-            else {
-                //get sequences, serialize and pass as a string to the worker, start the worker
-                jQuery.getFeed({
-                    url: "rss.xml",
-                    success: function(feed) {
-                        worker.postMessage("init:" + feed.items[myID].description);
-                    }		
-                });
-            }
-        }
-      }
-    },
-    
-    onclose: function(m) {
-      this._ws=null;
-    }
-});
-
-var client2 = new wscl("ws://127.0.0.1", "3434");
-client2.connect();
-client2.send("dss");
-/*
 //web socket interface
 var client = {
     connect: function(){
@@ -104,6 +45,7 @@ var client = {
             if (myID === -1) Alert("Sorry, all spots are taken!");
             else
             {
+                console.log("gettin rss for id " + myID);
                 //get sequences, serialize and pass as a string to the worker, start the worker
                 jQuery.getFeed({
                     url: "rss.xml",
@@ -119,10 +61,10 @@ var client = {
     _onclose: function(m) {
       this._ws=null;
     }
-};*/
+};
 
 //start ws connection
-//client2.connect(); //TODO: try/catch
+client.connect(); //TODO: try/catch
 
 //create new worker
 var worker = new Worker("evolve.js");
@@ -143,7 +85,7 @@ worker.addEventListener('message', function(e) {
     }
     
     if (e.data.indexOf("ws:") == 0) {
-        client2.chat(e.data.replace(/ws:/i, ""))
+        client.chat(e.data.replace(/ws:/i, ""))
     }
     
   }, false);

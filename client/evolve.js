@@ -1,7 +1,7 @@
 // worker's interface
 self.addEventListener('message', function(e) {
 	importScripts('evolution.js');
-    
+    log("WW started...");
     // create population
     var population = new Population();
     

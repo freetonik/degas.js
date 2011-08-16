@@ -6,14 +6,15 @@ var topFitness = 0;
 
 //global constants
 var SEQUENCE_LENGTH = 200;
-var CANDIDATE_LENGTH = 160;
+var CANDIDATE_LENGTH = 200;
 var SINGLE_MATCH_AWARD = 0.5;
 var DOUBLE_MATCH_AWARD = 2;
-var MUTATION_RATE = 0.6;
+var MUTATION_RATE = 0.5;
 var XOVER_RATE = 0.5;
-var GENERATIONS = 55;
-var POPULATION_SIZE = 3;
+var GENERATIONS = 1000;
+var POPULATION_SIZE = 100;
 
+//individual chromosome
 function Chromosome()
 {
     this.sequence = new Array(CANDIDATE_LENGTH);
@@ -57,7 +58,8 @@ function Chromosome()
 				}
 			}
 		}
-		
+        
+		//gp over second sequence
 		for (var i=0; i<CANDIDATE_LENGTH; i++)
 		{
 			for (var j=seqW2; j<SEQUENCE_LENGTH; j++)
@@ -82,6 +84,7 @@ function Chromosome()
         return this.fitness;
     };
     
+    // mutation function: randomly changes genes according to mutation rate
     this.mutate = function()
     {
     	if (!this.untouchable)
@@ -105,6 +108,7 @@ function Chromosome()
        	}
     };
     
+    // crossover function: changes half of individual's genes to given parent's genes
     this.crossover = function (parent)
     {
     	if (!this.untouchable)
@@ -117,7 +121,7 @@ function Chromosome()
     	
     
     }
-} //CHROMOSOME
+} // END OF CHROMOSOME
 
 function Population()
 {

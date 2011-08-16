@@ -1,8 +1,10 @@
 //websocket
 var ws = require('C:/nodejs/lib/ws/server.js'),
     server = ws.createServer();
+    
 //filesystem
 var fs = require('fs');
+
 //ID table
 var idTable = new Array();
 for (var j=0; j<10; j++)
