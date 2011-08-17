@@ -1,3 +1,7 @@
+/* GA web worker
+* 
+*
+*/
 // worker's interface
 self.addEventListener('message', function(e) {
 	importScripts('evolution.js');

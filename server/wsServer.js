@@ -13,6 +13,7 @@ for (var j=0; j<10; j++)
 }
 
 server.addListener("connection", function(conn){
+    // new message from the client
 	conn.addListener("message", function(message){
 	    //client connected 
         if (message.indexOf("client-connected:") == 0 ) {
@@ -34,16 +35,21 @@ server.addListener("connection", function(conn){
             console.log("Unknown message: " + message);
         }
 	  });
+    
+    // client disconnected
+    conn.addListener("close", function() {
+        releasePieceIdByConnectionId(conn.id);
+      });
 	});
 
 server.addListener("close", function(conn){
-    console.log("Closing connection...");
-    conn.broadcast(JSON.stringify({'id': conn.id, 'action': 'close'}));
+    console.log("Server closes");
 });
 
 server.listen(3434);
 console.log("WebSocket server started...");
 
+// look for unused ID's, return first, put connectionID in it
 function getNewPieceID(connectionID) {
     var pieceID = -1;
     //go through table and find unused (false) ID
@@ -68,9 +74,13 @@ function getPieceIdByConnectionId(connectionID) {
         if (idTable[j] === connectionID)
         {
             pieceID = j;
-            console.log("Returned piece ID: " + j);
             break;
         }
     }
     return pieceID;
+}
+
+function releasePieceIdByConnectionId(connectionID) {
+    console.log("Released id=" + getPieceIdByConnectionId(connectionID));
+    idTable[getPieceIdByConnectionId(connectionID)] = false;
 }

@@ -118,8 +118,6 @@ function Chromosome()
 		    	this.sequence[i] = parent.sequence[i];
 		    }
     	}
-    	
-    
     }
 } // END OF CHROMOSOME
 
