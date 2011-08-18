@@ -3,10 +3,27 @@
 <title>Evolution</title>
 <script src="inc/jquery.min.js"></script>
 <script type="text/javascript" src="inc/build/dist/jquery.jfeed.pack.js"></script>
-<script src="evolution.js"></script>
 <script src="degas/degas.js"></script>
+<script src="evolution.js"></script>
+
 <script>
 
+
+gal = new Individual(10, 2);
+
+fitness = function(sequence, bitsPerGene) {
+	var calculatedFitness = 0;
+	for (var i = 0; i < sequence.length; i++){
+		calculatedFitness += sequence[i][0];
+	}
+	return calculatedFitness;
+}
+
+gal.fitness = gal.computeFitness();
+console.log(gal.sequence + " and fit " + gal.fitness);
+gal.mutate(degas.mutationType['RANDOM_SUBSTITUTION'], 0.9);
+console.log(gal.sequence + " and fit " + gal.fitness);
+/*
 //web socket interface
 var client = {
     connect: function(){
@@ -89,7 +106,7 @@ worker.addEventListener('message', function(e) {
     }
     
   }, false);
-	
+	*/
 </script>
 
 </head>

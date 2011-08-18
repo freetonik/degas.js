@@ -14,6 +14,79 @@ var XOVER_RATE = 0.5;
 var GENERATIONS = 1000;
 var POPULATION_SIZE = 100;
 
+var Individual = degas.Class({
+	initialize: function (length, bitsPerGene) {
+		// core values
+		this.sequence = new Array(length);
+		this.geneSize = bitsPerGene;
+		this.fitnessMatrix = new Array(length);
+		this.fitness = 0;
+		
+		// feature specific values
+		this.alfaMale = false;				// untouchable (Neo)
+		this.mutationProbability = false;	// if false – use default, if value – use value
+		
+		// randomize sequence
+		for (var i = 0; i < length; i++) {
+			this.sequence[i] = new Array(this.geneSize);
+			for (var j = 0; j < this.geneSize; j++) {
+				this.sequence[i][j] = (Math.random() > 0.5) ? 1 : 0;
+			}
+		}
+		
+		// clear argument array
+		this.args = [];
+	},
+	
+	computeFitness: function() {
+		return fitness(this.sequence, this.geneSize);	// fitness() must be provided by the client
+	},
+	
+	decodeSequence: function () {
+		return decode(this.sequence, this.geneSize);	// decode() must be provided by the client
+	},
+	
+	// UYP
+	
+	// YUP
+	
+	mutate: function(mutationType, defaultProbability) {
+		if (!this.alfaMale){
+			switch (mutationType) {
+				case degas.mutationType['RANDOM_SUBSTITUTION']:
+					this.mutateRSubst((this.mutationProbability) ? this.mutationProbability : defaultProbability);
+					break;
+				case degas.mutationType['RANDOM_BLOCK_SUBSTITUTION']:
+					mutateRBlockSubst((this.mutationProbability) ? this.mutationProbability : defaultProbability);
+					break;
+				case degas.mutationType['RANDOM_SWAP']:
+					mutateRSwap((this.mutationProbability) ? this.mutationProbability : defaultProbability);
+					break;
+				case degas.mutationType['RANDOM_BLOCK_SWAP']:
+					mutateRBlockSwap((this.mutationProbability) ? this.mutationProbability : defaultProbability);
+					break;
+			}
+		}
+	},
+	
+	mutateRSubst: function(probability) {
+		if (probability >=0 && probability <=1){
+			var affected = this.sequence * this.bitsPerGene * probability;
+			for (var i = 0; i < affected; i++){
+				var genePosition = Math.floor(Math.random() * this.sequence.length);
+				var randomGene = new Array(this.bitsPerGene);
+				for (var j = 0; j < this.bitsPerGene; j++) {
+					randomGene[j] = (Math.random() > 0.5) ? 1 : 0;
+				}
+				this.sequence[genePosition] = randomGene;
+			}
+		} else {
+			degas.errorHandler("mutation probability is out of range")
+		}
+		
+	}
+});
+
 //individual chromosome
 function Chromosome()
 {
