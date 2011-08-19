@@ -9,20 +9,18 @@
 <script>
 
 
-gal = new Individual(10, 2);
-
-fitness = function(sequence, bitsPerGene) {
-	var calculatedFitness = 0;
-	for (var i = 0; i < sequence.length; i++){
-		calculatedFitness += sequence[i][0];
-	}
-	return calculatedFitness;
+pop = new Population(1, 5, 1);
+console.log(pop.fitness)
+for (var a=0; a < pop.pool.length; a++){
+	console.log(pop.pool[a].decodeSequence());
+}
+pop.mutate(1, 1);
+console.log(pop.computeFitness())
+for (var a=0; a < pop.pool.length; a++){
+	console.log(pop.pool[a].decodeSequence());
 }
 
-gal.fitness = gal.computeFitness();
-console.log(gal.sequence + " and fit " + gal.fitness);
-gal.mutate(degas.mutationType['RANDOM_SUBSTITUTION'], 0.9);
-console.log(gal.sequence + " and fit " + gal.fitness);
+
 /*
 //web socket interface
 var client = {
