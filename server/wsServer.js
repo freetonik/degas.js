@@ -1,86 +1,109 @@
-//websocket
-var ws = require('C:/nodejs/lib/ws/server.js'),
-    server = ws.createServer();
+//websocket & http server
+var ws = require('wsnode').server;
+var http = require('http');
+
+var webServer = http.createServer(function(request, response) {
+    console.log((new Date()) + " Received request for " + request.url);
+    response.writeHead(404);
+    response.end();
+});
+
+webServer.listen(8080, function() {
+    console.log((new Date()) + " Server is listening on port 8080");
+});
+
+// attach websocket to http server
+wsServer = new ws({
+    httpServer: webServer,
+    autoAcceptConnections: true
+});
     
-//filesystem
+// filesystem
 var fs = require('fs');
 
-//ID table
-var idTable = new Array();
-for (var j=0; j<10; j++)
-{
-    idTable[j]=false;
+// connection counter, never goes down, plays role of unique ID for a connection
+var activeConnections = 0;
+
+// client object (this is a value in client hachtable cliTable)
+function Cli(IPaddress) {
+	this.address = IPaddress;
+	this.fitness = 0;
+	this.sequence = [];
+};
+
+// clients has table (key - ID(activeConnections), value - Cli obj)
+var cliTable = new Array();
+
+// add new client object to the clients table
+function addNewClient(clientID, clientObj){
+	cliTable[clientID] = clientObj;
 }
 
-server.addListener("connection", function(conn){
+// removes client object from hash table
+function removeClient(clientID){
+	cliTable.splice(clientID, 1);
+}
+
+// returns data as object
+function getDataToSend(){
+	var data = {};
+	if (typeof prepareData == 'function'){
+		data = prepareData();	// this function must be provided
+	} 
+	return data;
+};
+
+// client connected
+wsServer.on('connect', function(conn){
+	
     // new message from the client
-	conn.addListener("message", function(message){
-	    //client connected 
-        if (message.indexOf("client-connected:") == 0 ) {
-            console.log("Client connected (client id=" + conn.id + ")");
-            //find an ID for it and send it
-            server.send(conn.id, "cid:" + getNewPieceID(conn.id));
+	conn.on('message', function(message){
+		activeConnections += 1;
+	    //  initial message, the only message that is not in JSON format
+        if (message.utf8Data.indexOf("client-connected:") == 0 ) {
+            console.log("Client connected (client address=" + conn.socket.remoteAddress  + ", id=" + activeConnections + ")");
+			conn.id = activeConnections;
+			var newClient = new Cli(conn.socket.remoteAddress);
+			addNewClient(activeConnections, newClient);
+			
+            // everything is ready, send data to client and let him start
+			var dataToSend = getDataToSend();
+			dataToSend.serverVersion = "0.0.2";
+			dataToSend.messageType = "initial-data";
+			conn.sendUTF(JSON.stringify(dataToSend));
+			console.log("Send initial data to client " + JSON.stringify(dataToSend))
         }
-        //client sent updated candidate, save it to file
-        else if (message.indexOf("gau-candidate:") == 0 ) {
-            fs.writeFile(getPieceIdByConnectionId(conn.id)+".txt", message.replace(/gau-candidate:/i, ""), function(err) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    console.log("New candidate received from " + conn.id);
-                }
-            });
-        }
-        else {
-            console.log("Unknown message: " + message);
-        }
+		// if it's not an initial message it must be in JSON format
+		else {
+			try {
+				var receivedObject = JSON.parse(message.utf8Data);
+			} catch (err) {
+				console.log("Error while parsing JSON object: " + message.utf8Data + ". Object will be empty.");
+				receivedObject = {};
+			}
+			
+			switch (receivedObject.messageType) {
+				// received message is the best individual; store it in cliTable
+				case ("best-individual"):
+					receivedObject.address = conn.socket.remoteAddress;
+					addNewClient(conn.id, receivedObject);
+					console.log("Received best individual from " + conn.socket.remoteAddress + "(id=" + conn.id + ")");
+					break;
+				// TODO: possibly other cases
+				
+				default:
+					console.log("Message with unknown type " + receivedObject.messageType + "is received from " + conn.socket.remoteAddress + "(id=" + conn.id + ")");
+			}
+		}
+
 	  });
     
     // client disconnected
-    conn.addListener("close", function() {
-        releasePieceIdByConnectionId(conn.id);
+    conn.on("close", function() {
+        console.log("Client with id " + conn.id + " disconnected");
       });
 	});
 
-server.addListener("close", function(conn){
-    console.log("Server closes");
+wsServer.on('close', function(conn){
+	// whaeva
 });
-
-server.listen(3434);
-console.log("WebSocket server started...");
-
-// look for unused ID's, return first, put connectionID in it
-function getNewPieceID(connectionID) {
-    var pieceID = -1;
-    //go through table and find unused (false) ID
-    for (var j=0; j<10; j++)
-    {
-        if (idTable[j] === false)
-        {
-            pieceID = j;
-            idTable[j]=connectionID;
-            console.log("Returned unused ID: " + j);
-            break;
-        }
-    }
-    return pieceID;
-}
-
-function getPieceIdByConnectionId(connectionID) {
-    var pieceID = -1;
-    //go through table and find unused (false) ID
-    for (var j=0; j<10; j++)
-    {
-        if (idTable[j] === connectionID)
-        {
-            pieceID = j;
-            break;
-        }
-    }
-    return pieceID;
-}
-
-function releasePieceIdByConnectionId(connectionID) {
-    console.log("Released id=" + getPieceIdByConnectionId(connectionID));
-    idTable[getPieceIdByConnectionId(connectionID)] = false;
-}

@@ -4,107 +4,51 @@
 <script src="inc/jquery.min.js"></script>
 <script type="text/javascript" src="inc/build/dist/jquery.jfeed.pack.js"></script>
 <script src="degas/degas.js"></script>
-<script src="evolution.js"></script>
-
 <script>
 
+// create worker
+var worker = new Worker('evolve.js');
+// web worker sent message
+worker.addEventListener('message', function(message) {
+	var receivedObject;
+	try {
+		receivedObject = JSON.parse(message.data);
+	} catch (err) {
+		degas.errorHandler("Error while parsing JSON from web worker: " + err);
+	}
+	
+	switch (receivedObject.messageType) {
+		case (degas.consts.workerMessage['LOG']):
+			console.log(message.logMessage);
+			break;
+		case (degas.consts.workerMessage['ERROR']):
+			degas.errorHandler(receivedObject.data);
+			break;
+		case (degas.consts.workerMessage['UI_UPDATE']):
+			updateUI(receivedObject);
+			break;
+		case (degas.consts.workerMessage['BEST_INDIVIDUAL']):
+			sendCandidateToServer(receivedObject);
+			break;
+		default:
+			degas.errorHandler("unknown message received from webworker");
+	}
+    
+}, false);
 
-pop = new Population(1, 5, 1);
-console.log(pop.fitness)
-for (var a=0; a < pop.pool.length; a++){
-	console.log(pop.pool[a].decodeSequence());
-}
-pop.mutate(1, 1);
-console.log(pop.computeFitness())
-for (var a=0; a < pop.pool.length; a++){
-	console.log(pop.pool[a].decodeSequence());
-}
-
-
-/*
-//web socket interface
-var client = {
-    connect: function(){
-     this._ws=new WebSocket("ws://127.0.0.1:3434");
-     this._ws.onopen=this._onopen;
-     this._ws.onmessage=this._onmessage;
-     this._ws.onclose=this._onclose;
-     console.log("Socket created " + this._ws);
-    },
-    
-    _onopen: function(){
-      client._send('client-connected:');
-      console.log("Socket opened");
-   },
-   
-    _send: function(message){
-      console.log("Sending msg to ws " + message);
-       if (this._ws) {
-            this._ws.send(message);
-        }
-    },
-    
-    chat: function(text) {
-      if (text != null && text.length>0 )
-        client._send(text);
-    },
-    
-    _onmessage: function(m) {
-      if (m.data){
-        console.log("Received message from server:" + m.data);
-        
-        // client ID received
-        if (m.data.indexOf("cid:") == 0) {
-            var myID = parseInt(m.data.replace(/cid:/i, ""));
-            //maybe all spots are really taken
-            if (myID === -1) Alert("Sorry, all spots are taken!");
-            else
-            {
-                console.log("gettin rss for id " + myID);
-                //get sequences, serialize and pass as a string to the worker, start the worker
-                jQuery.getFeed({
-                    url: "rss.xml",
-                    success: function(feed) {
-                        worker.postMessage("init:" + feed.items[myID].description);
-                    }		
-                });
-            }
-        }
-      }
-    },
-    
-    _onclose: function(m) {
-      this._ws=null;
-    }
+function updateUI(receivedObject){
+	document.getElementById('latest_result').textContent = receivedObject.generation + ":" + receivedObject.fitness;
 };
 
-//start ws connection
-client.connect(); //TODO: try/catch
+function sendCandidateToServer(receivedObject){
+	receivedObject.messageType = degas.consts.clientMessage['BEST_INDIVIDUAL'];
+	client.send(receivedObject);
+};
 
-//create new worker
-var worker = new Worker("evolve.js");
 
-//make him update local text
-worker.addEventListener('message', function(e) {
-    if (e.data.indexOf("log:") == 0) {
-        console.log(e.data.replace(/log:/i, ""));
-        return;
-    }
-    
-    if (e.data.indexOf("err:") == 0) {
-        console.log("ERROR: " + e.data.replace(/err:/i, ""));
-    }
-    
-    if (e.data.indexOf("gau:") == 0) {
-        document.getElementById('latest_result').textContent = e.data.replace(/gau:/i, "");
-    }
-    
-    if (e.data.indexOf("ws:") == 0) {
-        client.chat(e.data.replace(/ws:/i, ""))
-    }
-    
-  }, false);
-	*/
+
+var client = new wsClient("localhost", "8080");
+
 </script>
 
 </head>

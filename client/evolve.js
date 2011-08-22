@@ -1,40 +1,61 @@
 /* GA web worker
 * 
-*
 */
-// worker's interface
-self.addEventListener('message', function(e) {
-	importScripts('evolution.js');
-    log("WW started...");
-    // create population
-    var population = new Population();
-    
-    //initial message with two sequences
-	if (e.data.indexOf("init:") == 0) {
-        // accept serialized object
-        var raw = new Array;
-        raw = e.data.replace(/init:/i, "").split("");
-        // populate global arrays of sequences
-        for (var k=0; k<SEQUENCE_LENGTH; k++)
-            sequences[0][k]=raw[k];
-        for (var k=0; k<SEQUENCE_LENGTH; k++)
-            sequences[1][k]=raw[k+SEQUENCE_LENGTH];
-            
+importScripts('degas/degas.js');
+var evolving = false;	//global evolution switch
+var population = new Population(degas.config.populationSize, degas.config.sequenceLength, degas.config.cellSize);
+
+// web worker receives message
+self.addEventListener('message', function(message) {
+	
+    var receivedObject = JSON.parse(message.data);
+	if (receivedObject.messageType == degas.consts.serverMessage['INITIAL_DATA']) {
+        //evolving = true;
+		
         // start evolution
         try {
-            for (var i = 0; i < GENERATIONS; ++i)
+			var genCounter = 0;
+			var uiData = {};
+            //while (evolving === true)
+			for (var j=0; j<100; j++)
             {
                 population.buildNextGeneration();
-                gau("Generation " + i + ": " + population.people[0].fitness);
-                if (i%10 === 0) ws("gau-candidate:" + population.people[0].sequence);
+				uiData = {};
+				uiData.generation = genCounter;
+				uiData.fitness = population.pool[0].fitness;
+                uui(uiData);
+				genCounter += 1;
+				
+				// send best individual update to server
+				if (genCounter%degas.config.serverUpdateCycle === 0) {
+					var objectToSend = {}
+					objectToSend.fitness = population.pool[0].fitness;
+					objectToSend.sequence = population.pool[0].sequence;
+					objectToSend.messageType = "best-individual";
+					ubi(objectToSend);
+				}
             }
         }
-        catch (e)
+        catch (errorMessge)
         {
-            self.postMessage("When executing function: " + e.message);
+            err("Can't build next generation!");
             self.close();
         }
-    }
+    } 
+
+	// resume evolution
+	else if (receivedObject.messageType === degas.consts.workerMessage['RESUME_EVOLUTION']) {
+		evolving = true;
+	}
+
+	// pause evolution
+	else if (receivedObject.messageType === degas.consts.workerMessage['PAUSE_EVOLUTION']) {
+		evolving = false;
+	}
+	
+	else {
+		err("webworker received unknown message!")
+	}
     
     // clean up
 	delete population;
@@ -43,17 +64,26 @@ self.addEventListener('message', function(e) {
 
 //messaging interface
 function log(msg) {
-    postMessage("log:" + msg);
-}
+	var objectToSend = {};
+	objectToSend.messageType = degas.consts.workerMessage['LOG'];
+	objectToSend.data = msg;
+	
+    postMessage(JSON.stringify(objectToSend));
+};
 
-function gau(msg) {
-    postMessage("gau:" + msg);
-}
+function uui(uiObject) {
+	uiObject.messageType = degas.consts.workerMessage['UI_UPDATE'];
+	postMessage(JSON.stringify(uiObject));
+};
 
 function err(msg) {
-    postMessage("err:" + msg);
-}
+    var objectToSend = {};
+	objectToSend.messageType = degas.consts.workerMessage['ERROR'];
+	objectToSend.data = msg;
+	
+	postMessage(JSON.stringify(objectToSend));
+};
 
-function ws(msg) {
-    postMessage("ws:" + msg);
-}
+function ubi(objectToSend) {
+	postMessage(JSON.stringify(objectToSend));
+};
