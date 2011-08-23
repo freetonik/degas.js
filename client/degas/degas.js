@@ -1,6 +1,6 @@
 /** Degas framework
 *
-*	Object-oriented layer and object handling from turing.js (https://github.com/alexyoung/turing.js/) 
+*	Object-oriented layer and object handling inspired by turing.js (https://github.com/alexyoung/turing.js/) 
 *	by Alex Young
 *
 */
@@ -29,6 +29,8 @@
 	degas.consts.mutationType['RANDOM_SUBSTITUTION'] = "random-substitution";
 	degas.consts.crossoverType = [];
 	degas.consts.crossoverType['RANDOM_SPLIT'] = "random-split";
+    degas.consts.crossoverType['RANDOM_TPSPLIT'] = "random-tpsplit";
+    degas.consts.crossoverType['UNIFORM'] = "uniform";
 	degas.consts.serverMessage = [];
 	degas.consts.serverMessage['INITIAL_DATA'] = "initial-data";
 	degas.consts.clientMessage = [];
@@ -93,9 +95,15 @@
 			return null;
 		}	
 	};
+    
 	
 	// CROSSOVER FUNCTIONS
 	degas.xover = {};
+    /**
+	*	Performs random single split crossover for two individual sequences
+	* 	@param: sequences to crossover
+	* 	@return: child sequence
+	*/
 	degas.xover.RSplit = function(sequenceA, sequenceB) {
 		var childSequence = new Array(sequenceA.length);
 		var splitPoint = Math.floor(Math.random() * sequenceA.length);
@@ -105,6 +113,46 @@
 		for (var j = splitPoint; j < sequenceB.length; j++){
 			childSequence[j] = sequenceB[j];
 		}
+		return childSequence;
+	};
+    
+    /**
+	*	Performs random two random point split crossover for two individual sequences
+	* 	@param: sequences to crossover
+	* 	@return: child sequence
+	*/
+    degas.xover.RTPSplit = function(sequenceA, sequenceB) {
+		var childSequence = new Array(sequenceA.length);
+		var splitPoint1 = Math.floor(Math.random() * sequenceA.length/2);
+        var splitPoint2 = Math.floor(Math.random() * sequenceA.length/2) + sequenceA.length/2;
+		for (var i = 0; i < splitPoint1; i++){
+			childSequence[i] = sequenceA[i];
+		}
+        for (var j = splitPoint1; j < splitPoint2; j++){
+			childSequence[j] = sequenceB[j];
+		}
+		for (var j = splitPoint2; j < sequenceB.length; j++){
+			childSequence[j] = sequenceB[j];
+		}
+		return childSequence;
+	};
+    
+    /**
+	*	Performs uniform crossover for two individual sequences
+	* 	@param: sequences to crossover
+	* 	@return: child sequence
+	*/
+    degas.xover.uniform = function(sequenceA, sequenceB) {
+		var childSequence = new Array(sequenceA.length);
+		var walker = 0;
+		while (walker != sequenceA.length){
+            var splitPoint = Math.floor(Math.random() * sequenceA.length/20);
+            var i = 0;
+            for (i=walker; i < walker + splitPoint; i++){
+                childSequence[i] = (i%2 === 0) ? sequenceA[i] : sequenceB[i];
+            }
+            walker += i;
+        }
 		return childSequence;
 	};
 	
@@ -329,7 +377,7 @@ var Individual = degas.Class({
 	},
 	
 	/**
-	*	Encodes character sequence. Calls encode() (if exists, provided by client) or computes default bit sum (as characters). Not really sure this method belongs here
+	*	Encodes character sequence. Calls encode() (if exists, provided by client) or computes default bit sum (as characters). Not really sure this method belongs here. Method is moved to next release.
 	* 	@param: array of characters
 	*	@retrurn: array of arrays of bits (length === sequence.length * bitsPerCell)
 	*/

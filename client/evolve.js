@@ -1,4 +1,4 @@
-/* GA web worker
+/* Degas evolutionary computation web worker
 * 
 */
 importScripts('degas/degas.js');
