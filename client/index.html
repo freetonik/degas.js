@@ -1,15 +1,30 @@
 <html>
 <head>
+<<<<<<< HEAD
 <title>Evolution</title>
 
+=======
+	<link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap-1.1.0.min.css">
+<title>degas.js</title>
+<style type="text/css">
+.content {width="400px" !important;}
+</style>
+>>>>>>> 0.0.2b2
 <script src="degas/degas.js"></script>
+<script src="inc/jquery.min.js"></script>
 <script>
+<<<<<<< HEAD
 //
 //  THIS IS AN EXAMPLE WEB PAGE FOR DEGAS
 //
+=======
+var connected = false;
+var started = false;
+>>>>>>> 0.0.2b2
 // create worker
 var worker = new Worker('evolve.js');
 // web worker sent message
+$('#terminate_button').attr("disabled", true);
 worker.addEventListener('message', function(message) {
 	var receivedObject;
 	try {
@@ -38,7 +53,9 @@ worker.addEventListener('message', function(message) {
 }, false);
 
 function updateUI(receivedObject){
-	document.getElementById('latest_result').textContent = receivedObject.generation + ":" + receivedObject.fitness;
+	document.getElementById('genLabel').textContent = receivedObject.generation;
+	document.getElementById('bestFitLabel').textContent = receivedObject.bestFitness;
+	document.getElementById('popFitLabel').textContent = receivedObject.fitness / degas.config.populationSize;
 };
 
 function sendCandidateToServer(receivedObject){
@@ -46,15 +63,88 @@ function sendCandidateToServer(receivedObject){
 	client.send(receivedObject);
 };
 
+function connectToServer(){
+	if (!connected) {
+		try {
+			var client = new wsClient("localhost", "8080");
+			$('#connect_button').attr("disabled", true);
+			$('#terminate_button').attr("disabled", false);
+			connected = true;
+		} catch (e) {
+			degas.errorHandler(e);
+		}
+	} else {
+	}
+	
+	 
+}
 
+function terminateWorker(){
+	try {
+		worker.terminate();
+		$('#terminate_button').attr("disabled", true);
+		$('#newConn_button').attr("disabled", false);
+		connected = false;
+	} catch (e) {
+		degas.errorHandler(e);
+	}
+}
 
-var client = new wsClient("localhost", "8080");
+function newConnection(){
+	window.location.reload(true);
+}
+
+function changeMutRate(val){
+	degas.config.mutationProbabilityForIndividual = val/100;
+	document.getElementById("mutRateLabel").innerHTML=val;
+}
+
+function changeXoverRate(val){
+	degas.config.crossoverProbability = val/100;
+	document.getElementById("xoverRateLabel").innerHTML=val;
+}
 
 </script>
 
 </head>
 <body>
-<h1>Evolution</h1>
-<p id="latest_result">none</p>
+	
+	<div class="container-fluid">
+    <div class="sidebar">
+     	
+    </div>
+    <div class="content">
+	<br><br>
+      	<h1>Evolution</h1>
+		<div class="row">
+			<div class="span16 columns">
+				<table>
+			        <thead>
+			          <tr>
+						<th><h6>Mutation rate</h6></th>
+						<th><h6>Crossover rate</h6></th>
+			            <th><h6>Generation</h6></th>
+			            <th><h6>Average fitness</h6></th>
+			            <th><h6>Top fitness</h6></th>
+			          </tr>
+			        </thead>
+			        <tbody>
+			          <tr>
+						<td><input type="range" min="0" max="100" value="10" step="1" onchange="changeMutRate(this.value)" /> <span id="mutRateLabel">10</span></td>
+						<td><input type="range" min="0" max="100" value="30" step="1" onchange="changeXoverRate(this.value)" /> <span id="xoverRateLabel">30</span></td>
+			            <td><h2 id="genLabel">0</h2></td>
+			            <td><h4 id="popFitLabel"></h4></td>
+			            <td><h4 id="bestFitLabel"></h4></td>
+			          </tr>
+			        </tbody>
+			      </table>
+			</div>
+			</div>
+		<button id="connect_button" type="submit" class="btn large primary" onclick="connectToServer()">Connect</button>
+		<button id="terminate_button" type="submit" disabled="disabled" class="btn large" onclick="terminateWorker()">Stop</button>
+		<button id="newConn_button" type="submit" disabled="disabled" class="btn large" onclick="newConnection()">New Connection</button>
+    </div>
+  </div>
+
 </body>
 </html> 

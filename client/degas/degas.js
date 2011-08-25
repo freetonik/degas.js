@@ -47,9 +47,9 @@
 	degas.config = {};
 	degas.config.numberOfGenerations = false;	//when set to 'false' evolution doesn't stop
 	degas.config.populationSize = 1000;			//default population size is set to 100 individual sequences
-	degas.config.sequenceLength = 100;			//default sequence length is set to 10 cells
-	degas.config.cellSize = 10;					//default cell size is set to 10 bits
-	degas.config.serverUpdateCycle = 10;		//by default send updated best individual to server every 10 generations
+	degas.config.sequenceLength = 300;			//default sequence length is set to 10 cells
+	degas.config.cellSize = 100;					//default cell size is set to 10 bits
+	degas.config.serverUpdateCycle = 1000;		//by default send updated best individual to server every 10 generations
 	degas.config.crossoverType = degas.consts.crossoverType['RANDOM_SPLIT'];	//default crosover type is random split
 	degas.config.mutationType = degas.consts.mutationType['RANDOM_SUBSTITUTION'];	//default mutation type is random substitution
 	degas.config.crossoverProbability = 0.3;			//by default 30% of population is replaced with children of best each generation
@@ -579,6 +579,7 @@ wsClient = degas.Class({
 			var receivedObject = JSON.parse(message.data);
 			switch (receivedObject.messageType){
 				case degas.consts.serverMessage['INITIAL_DATA']:
+					//worker.postMessage(message.data);
 					worker.postMessage(message.data);
 					break;
 				case degas.consts.serverMessage['UPDATED-DATA']:
